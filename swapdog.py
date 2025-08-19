@@ -71,7 +71,7 @@ if __name__ == '__main__':
     while True:
         current = psutil.virtual_memory().percent
         logging.debug(f"Current virtual memory: {current}%")
-        enabled_swaps = map(lambda x: x.decode('utf-8'), list_enabled_swaps())
+        enabled_swaps = set(x.decode('utf-8') for x in list_enabled_swaps())
         for t in thresholds:
             logging.debug(f"Checking {t}")
             if current >= t.percentage:
