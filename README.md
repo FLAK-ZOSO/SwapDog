@@ -44,6 +44,17 @@ Take this as a documentation of the steps that the `install.sh` script performs,
 7. Start the service with `sudo systemctl start swapdog`
 8. Check the status of the service with `sudo systemctl status swapdog`
 
+```bash
+sudo pip3 install -r requirements.txt
+sudo cp swapdog.py /usr/local/sbin/
+sudo chmod 744 /usr/local/sbin/swapdog.py
+sudo cp swapdog.json /etc/
+sudo cp swapdog.service /etc/systemd/system/
+sudo systemctl enable swapdog
+sudo systemctl start swapdog
+sudo systemctl status swapdog
+```
+
 ## Configuration
 
 In order to configure the behavior of SwapDog, you need to edit the `swapdog.json` file located in `/etc/`. The file follows a simple JSON structure that allows you to set thresholds and the swap devices to be used.
@@ -94,4 +105,34 @@ NAME      TYPE      SIZE USED PRIO
     ],
     "period": 1.0
 }
+```
+
+## Uninstallation
+
+To uninstall SwapDog, you can use the provided [uninstall.sh](uninstall.sh) script or perform the steps manually.
+
+### Automated
+
+You can run the following command to uninstall SwapDog using the script:
+
+```bash
+chmod +x uninstall.sh
+./uninstall.sh
+```
+
+### Manual
+
+Take this as a documentation of the steps that the `uninstall.sh` script performs, so you can do it manually if you prefer:
+
+1. Stop the service with `sudo systemctl stop swapdog`
+2. Disable the service with `sudo systemctl disable swapdog`
+3. Remove the service file with `sudo rm /etc/systemd/system/swapdog.service`
+4. Remove the script with `sudo rm /usr/local/sbin/swapdog.py`
+5. Remove the configuration file with `sudo rm /etc/swapdog.json`
+
+```bash
+sudo systemctl stop swapdog
+sudo systemctl disable swapdog
+sudo rm /etc/systemd/system/swapdog.service /usr/local/sbin/swapdog.py /etc/swapdog.json
+sudo systemctl daemon-reload
 ```
