@@ -1,5 +1,5 @@
 [Unit]
-description=SwapDog Service - Enables swaps at set thresholds
+Description=SwapDog Service - Enables swaps at set thresholds
 After=network.target
 
 [Service]

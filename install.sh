@@ -5,7 +5,7 @@ echo "Installing dependencies..."
 sudo pip3 install -r requirements.txt
 
 echo "Installing swapdog.py to /usr/local/sbin/"
-sudo install -m 755 swapdog.py /usr/local/sbin/swapdog.py
+sudo install -m 744 swapdog.py /usr/local/sbin/swapdog.py
 
 echo "Installing swapdog.json to /etc/"
 sudo install -m 644 swapdog.json /etc/swapdog.json
