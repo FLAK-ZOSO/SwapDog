@@ -5,6 +5,7 @@ import sys
 import json
 import time
 import subprocess
+import logging
 
 import psutil
 
@@ -28,7 +29,7 @@ def read_configuration(path: str) -> tuple[list[Threshold], float]:
         with open(path, "r") as config_file:
             config = json.load(config_file)
     except IOError as io_error:
-        print(f"Error: could not open {path}", file=sys.stderr)
+        logging.error(f"Error: could not open {path}")
         raise io_error
     thresholds: list[Threshold] = []
     for t in config["thresholds"]:
@@ -45,23 +46,29 @@ def list_enabled_swaps() -> list[bytes]:
 
 
 def enable_swap(swap: str) -> None:
+    logging.info(f"Attempt to enable {swap}")
     try:
         subprocess.check_call(["swapon", swap])
     except subprocess.CalledProcessError as e:
-        print(f"Error enabling swap {swap}: {e}", file=sys.stderr)
+        logging.error(f"Error enabling swap {swap}: {e}")
 
 
 if __name__ == '__main__':
+    logging.basicConfig(
+        level=logging.DEBUG,
+        format="%(asctime)s SwapDog[%(process)d] %(levelname)s %(message)s"
+    )
     thresholds, period = read_configuration(sys.argv[1] if len(sys.argv) > 1 else CONFIG)
-    print(thresholds, file=sys.stderr)
+    logging.info(f"Starting with {thresholds}")
     while True:
         current = psutil.virtual_memory().percent
-        print(current, file=sys.stderr)
+        logging.debug(f"Current virtual memory: {current}%")
         enabled_swaps = map(lambda x: x.decode('utf-8'), list_enabled_swaps())
         for t in thresholds:
-            print(t, file=sys.stderr)
+            logging.debug(f"Checking {t}")
             if current >= t.percentage:
                 if t.swap in enabled_swaps:
                     continue
+                logging.info(f"{t} exceeded")
                 enable_swap(t.swap)
         time.sleep(period)
