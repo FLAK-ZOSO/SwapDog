@@ -1,0 +1,17 @@
+[Unit]
+description=SwapDog Service - Enables swaps at set thresholds
+After=network.target
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/python3 /usr/local/sbin/swapdog.py /etc/swapdog.json
+TimeoutSec=10
+KillMode=process
+Restart=on-failure
+RestartSec=5
+User=root
+Group=root
+Environment=PYTHONUNBUFFERED=1
+
+[Install]
+WantedBy=multi-user.target
