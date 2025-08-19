@@ -103,15 +103,19 @@ if __name__ == '__main__':
         logging.warning(f"No configuration path provided, defaulting to {CONFIG}")
         thresholds, period = read_configuration(CONFIG)
     logging.info(f"Starting with {thresholds}")
-    while True:
-        current = psutil.virtual_memory().percent
-        logging.debug(f"Current virtual memory: {current}%")
-        enabled_swaps = set(x.decode('utf-8') for x in list_enabled_swaps())
-        for t in thresholds:
-            logging.debug(f"Checking {t}")
-            if current >= t.percentage:
-                if t.swap in enabled_swaps:
-                    continue
-                logging.info(f"{t} exceeded")
-                enable_swap(t.swap)
-        time.sleep(period)
+    try:
+        while True:
+            current = psutil.virtual_memory().percent
+            logging.debug(f"Current virtual memory: {current}%")
+            enabled_swaps = set(x.decode('utf-8') for x in list_enabled_swaps())
+            for t in thresholds:
+                logging.debug(f"Checking {t}")
+                if current >= t.percentage:
+                    if t.swap in enabled_swaps:
+                        continue
+                    logging.info(f"{t} exceeded")
+                    enable_swap(t.swap)
+            time.sleep(period)
+    except Exception as e:
+        logging.error(f"Fatal error in main loop. {e}")
+        sys.exit(1)
