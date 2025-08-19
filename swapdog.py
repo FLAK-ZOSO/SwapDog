@@ -1,20 +1,32 @@
 #!/usr/bin/python3
+from __future__ import annotations
+import os
 import sys
 import json
 import time
-import psutil
 import subprocess
 from typing import NamedTuple
+
+import psutil
 
 
 CONFIG = '/etc/swapdog.json'
 PERIOD = 1
 
 
-class Threshold(NamedTuple):
+class Threshold:
     percentage: float
     swap: str
     enabled: bool
+
+    def __init__(self, percentage: float, swap: str, enabled: bool):
+        object.__setattr__(self, "percentage", percentage)
+        object.__setattr__(self, "swap", os.path.realpath(swap))
+        object.__setattr__(self, "enabled", enabled)
+    
+    def __repr__(self):
+        return f"<{'enabled' if self.enabled else 'disabled'} Treshold at " \
+        f"{self.percentage}% for {self.swap}>"
 
 
 def read_configuration(path: str) -> tuple[list[Threshold], float]:
@@ -31,7 +43,7 @@ def read_configuration(path: str) -> tuple[list[Threshold], float]:
         return (thresholds, config["period"])
     return (thresholds, PERIOD)
 
-def list_enabled_swaps() -> list[str]:
+def list_enabled_swaps() -> list[bytes]:
     return subprocess.check_output([
         "swapon", "--show=NAME", "--raw", "--noheadings"
     ]).splitlines()
@@ -44,11 +56,14 @@ if __name__ == '__main__':
     print(thresholds, file=sys.stderr)
     while True:
         current = psutil.virtual_memory().percent
-        enabled_swaps = list_enabled_swaps()
+        print(current, file=sys.stderr)
+        enabled_swaps = map(lambda x: x.decode('utf-8'), list_enabled_swaps())
+        print(enabled_swaps, file=sys.stderr)
         for t in thresholds:
+            print(t, file=sys.stderr)
             if t.enabled:
                 continue
-            if t.percentage >= current:
+            if current >= t.percentage:
                 if t.swap in enabled_swaps:
                     t.enabled = True
                     continue
