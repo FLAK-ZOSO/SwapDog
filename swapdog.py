@@ -15,16 +15,39 @@ PERIOD = 1.0
 
 
 class Threshold:
+    """
+    Represents a memory usage threshold and associated swap device.
+
+    :param percentage: Memory usage percentage to trigger swap.
+    :type percentage: float
+    :param swap: Path to the swap device.
+    :type swap: str
+    """
 
     def __init__(self, percentage: float, swap: str):
         self.percentage = percentage
         self.swap = os.path.realpath(swap)
     
     def __repr__(self):
+        """
+        Returns a string representation of the Threshold.
+
+        :return: String representation.
+        :rtype: str
+        """
         return f"<Threshold at {self.percentage}% for {self.swap}>"
 
 
 def read_configuration(path: str) -> tuple[list[Threshold], float]:
+    """
+    Reads and parses the configuration file.
+
+    :param path: Path to the configuration file.
+    :type path: str
+    :return: List of Threshold objects and the monitoring period in seconds.
+    :rtype: tuple[list[Threshold], float]
+    :raises SystemExit: If the file cannot be opened (exit code 72) or JSON is malformed (exit code 78).
+    """
     try:
         with open(path, "r") as config_file:
             config = json.load(config_file)
@@ -44,12 +67,24 @@ def read_configuration(path: str) -> tuple[list[Threshold], float]:
 
 
 def list_enabled_swaps() -> list[bytes]:
+    """
+    Lists currently enabled swap devices.
+
+    :return: List of swap device names as bytes.
+    :rtype: list[bytes]
+    """
     return subprocess.check_output([
         "swapon", "--show=NAME", "--raw", "--noheadings"
     ]).splitlines()
 
 
 def enable_swap(swap: str) -> None:
+    """
+    Enables the specified swap device.
+
+    :param swap: Path to the swap device.
+    :type swap: str
+    """
     logging.info(f"Attempt to enable {swap}")
     try:
         subprocess.check_call(["swapon", swap])
@@ -59,7 +94,7 @@ def enable_swap(swap: str) -> None:
 
 if __name__ == '__main__':
     logging.basicConfig(
-        level=logging.DEBUG,
+        level=logging.INFO,
         format="%(asctime)s SwapDog[%(process)d] %(levelname)s %(message)s"
     )
     if len(sys.argv) > 1:
