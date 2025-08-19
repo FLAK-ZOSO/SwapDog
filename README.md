@@ -43,7 +43,7 @@ Take this as a documentation of the steps that the `install.sh` script performs,
 
 1. Install dependencies with `sudo pip3 install -r requirements.txt`
 2. Copy the [swapdog.py](swapdog.py) file to `/usr/local/sbin/`
-3. Make it executable with `sudo chmod +x /usr/local/sbin/swapdog.py`
+3. Make it executable with `sudo chmod 744 /usr/local/sbin/swapdog.py`
 4. Copy the [swapdog.json](swapdog.json) file to `/etc/`
 5. Copy the [swapdog.service](swapdog.service) file to `/etc/systemd/system/`
 6. Enable the service with `sudo systemctl enable swapdog`
