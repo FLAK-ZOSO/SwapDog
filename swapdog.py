@@ -22,11 +22,9 @@ class Threshold:
     def __init__(self, percentage: float, swap: str, enabled: bool):
         object.__setattr__(self, "percentage", percentage)
         object.__setattr__(self, "swap", os.path.realpath(swap))
-        object.__setattr__(self, "enabled", enabled)
     
     def __repr__(self):
-        return f"<{'enabled' if self.enabled else 'disabled'} Treshold at " \
-        f"{self.percentage}% for {self.swap}>"
+        return f"<Treshold at {self.percentage}% for {self.swap}>"
 
 
 def read_configuration(path: str) -> tuple[list[Threshold], float]:
@@ -38,7 +36,7 @@ def read_configuration(path: str) -> tuple[list[Threshold], float]:
         raise io_error
     thresholds: list[Threshold] = []
     for t in config["thresholds"]:
-        thresholds.append(Threshold(t["percentage"], t["swap"], False))
+        thresholds.append(Threshold(t["percentage"], t["swap"]))
     if "period" in config:
         return (thresholds, config["period"])
     return (thresholds, PERIOD)
@@ -61,11 +59,8 @@ if __name__ == '__main__':
         print(enabled_swaps, file=sys.stderr)
         for t in thresholds:
             print(t, file=sys.stderr)
-            if t.enabled:
-                continue
             if current >= t.percentage:
                 if t.swap in enabled_swaps:
-                    t.enabled = True
                     continue
                 enable_swap(t.swap)
         time.sleep(period)
