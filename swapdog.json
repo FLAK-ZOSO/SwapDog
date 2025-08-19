@@ -1,0 +1,8 @@
+{
+    "thresholds": [
+        {
+            "percentage": 95.0,
+            "swap": "/dev/mapper/nvme0n1p2_crypt"
+        }
+    ]
+}
