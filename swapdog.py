@@ -5,7 +5,6 @@ import sys
 import json
 import time
 import subprocess
-from typing import NamedTuple
 
 import psutil
 
@@ -19,7 +18,7 @@ class Threshold:
     swap: str
     enabled: bool
 
-    def __init__(self, percentage: float, swap: str, enabled: bool):
+    def __init__(self, percentage: float, swap: str):
         object.__setattr__(self, "percentage", percentage)
         object.__setattr__(self, "swap", os.path.realpath(swap))
     
