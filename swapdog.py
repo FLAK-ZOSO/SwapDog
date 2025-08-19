@@ -9,7 +9,7 @@ import logging
 
 import psutil
 
-
+__version__ = '0.1.0'
 CONFIG = '/etc/swapdog.json'
 PERIOD = 1.0
 

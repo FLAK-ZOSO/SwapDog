@@ -1,0 +1,54 @@
+[build-system]
+requires = ["hatchling >= 1.26"]
+build-backend = "hatchling.build"
+
+[project]
+name = "swapdog"
+dynamic = ["version"]
+dependencies = [
+    "psutil"
+]
+requires-python = ">=3.9"
+license = {text = "GNU General Public License v3.0 only"}
+license-files = ["LICENSE"]
+description = "Monitors RAM usage and enables swap devices"
+authors = [
+    {name = "FLAK-ZOSO", email = "mattia.marchese.2006@gmail.com"},
+]
+readme = "README.md"
+keywords = [
+    "swap",
+    "ram",
+    "memory",
+    "monitoring",
+    "daemon",
+]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: System Administrators",
+    "Intended Audience :: End Users/Desktop",
+    "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
+    "Natural Language :: English",
+    "Operating System :: POSIX",
+    "Operating System :: Unix",
+    "Operating System :: MacOS",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: Implementation :: CPython",
+    "Topic :: System :: Monitoring",
+    "Topic :: System :: Operating System",
+    "Topic :: System :: Systems Administration",
+    "Topic :: Utilities",
+]
+
+[project.urls]
+Repository = "https://github.com/FLAK-ZOSO/SwapDog.git"
+Issues = "https://github.com/FLAK-ZOSO/SwapDog/issues"
+Changelog = "https://github.com/FLAK-ZOSO/SwapDog/blob/main/CHANGELOG.md"
+
+[tool.hatch.version]
+path = "swapdog.py"
