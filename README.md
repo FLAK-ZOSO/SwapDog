@@ -1,17 +1,11 @@
-# Swap watchdog
+# SwapDog
 
-### Idea of functionality
-
-The idea behind this gist is to provide a minimal daemon that...
-- monitors the usage of RAM
-- when the percentage exceeds a set treshold, selected swaps (swapfiles or swap partitions) are enabled
-- when swaps are enabled and a 
-
-It would be cool to be able to set from a configuration file different tresholds
+SwapDog is a *swap watchdog* that monitors RAM usage and enables swap devices only when necessary, based on user-defined thresholds. It is designed to prevent excessive swapping, which can lead to performance degradation, while still allowing the system to function without crashing when RAM is exhausted.
 
 ### Rationale
 
 It is meant to be useful when one doesn't want to swap memory if not strictly needed, but also doesn't want crashes.
+
 - swap memory is always slower than RAM, especially HDDs are
 - SSDs wears out with read and write cycles, while RAM doesn't
 
