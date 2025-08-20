@@ -163,6 +163,8 @@ def should_disable_swap(threshold: Threshold, usage_map: dict[str, tuple[int, in
     :type vmem_info: tuple[int, int]
     :param hysteresis: Percentage margin under the threshold for it to be untriggered
     :type hysteresis: float
+    :return: Whether to disable the swap or not
+    :rtype: bool
     """
     logging.debug(usage_map)
     swap_info = usage_map[threshold.swap]
