@@ -146,8 +146,12 @@ def get_swap_usage_map() -> dict[str, tuple[int, int]]:
                 used = int(parts[1])
                 total = int(parts[2])
                 usage_map[path] = (used, total)
-    except Exception as e:
-        logging.warning(f"Error getting swap usage map: {e}")
+    except subprocess.CalledProcessError as e:
+        logging.warning(f"Error running swapon command: {e}")
+    except UnicodeDecodeError as e:
+        logging.warning(f"Error decoding swapon output: {e}")
+    except ValueError as e:
+        logging.warning(f"Error parsing swapon output: {e}")
     return usage_map
 
 
@@ -167,6 +171,7 @@ def should_disable_swap(threshold: Threshold, usage_map: dict[str, tuple[int, in
     :rtype: bool
     """
     logging.debug(usage_map)
+    
     swap_info = usage_map[threshold.swap]
     swap_used = swap_info[0]
     ram_not_free = vmem_info[0]
