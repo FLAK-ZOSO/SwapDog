@@ -6,7 +6,6 @@ import json
 import time
 import subprocess
 import logging
-from collections import namedtuple
 import traceback
 
 import psutil
@@ -15,6 +14,7 @@ __version__ = '0.1.0'
 CONFIG_PATH = '/etc/swapdog.json'
 PERIOD = 1.0
 DISABLE_SWAPS = False
+HYSTERESIS = 10
 
 
 class Threshold:
@@ -65,7 +65,8 @@ def read_configuration(path: str) -> tuple[list[Threshold], dict[str, float | bo
         thresholds.append(Threshold(t["percentage"], t["swap"]))
     configuration: dict[str, float | bool] = {
         "period": PERIOD,
-        "disable_swaps": DISABLE_SWAPS
+        "disable_swaps": DISABLE_SWAPS,
+        "hysteresis": HYSTERESIS
     }
     if "period" in parsed_config:
         configuration["period"] = parsed_config["period"]
@@ -78,6 +79,10 @@ def read_configuration(path: str) -> tuple[list[Threshold], dict[str, float | bo
             f"No disable_swaps provided, defaulting to {DISABLE_SWAPS}. Swaps will "
             f"{'not ' if not DISABLE_SWAPS else ''}be automatically disabled"
         )
+    if "hysteresis" in parsed_config:
+        configuration["hysteresis"] = parsed_config["hysteresis"]
+    else:
+        logging.warning(f"No hysteresis provided, defaulting to {HYSTERESIS}%.")
     return (thresholds, configuration)
 
 
@@ -146,7 +151,7 @@ def get_swap_usage_map() -> dict[str, tuple[int, int]]:
     return usage_map
 
 
-def should_disable_swap(threshold: Threshold, usage_map: dict[str, tuple[int, int]], vmem_info: tuple[int, int]) -> bool:
+def should_disable_swap(threshold: Threshold, usage_map: dict[str, tuple[int, int]], vmem_info: tuple[int, int], hysteresis: float) -> bool:
     """
     Decide if swap should be disabled based on RAM+swap free and a threshold.
 
@@ -156,6 +161,8 @@ def should_disable_swap(threshold: Threshold, usage_map: dict[str, tuple[int, in
     :type usage_map: dict[str, tuple[int, int]]
     :param vmem_info: Information on (not_free, total) bytes of the virtual memory usage
     :type vmem_info: tuple[int, int]
+    :param hysteresis: Percentage margin under the threshold for it to be untriggered
+    :type hysteresis: float
     """
     logging.debug(usage_map)
     swap_info = usage_map[threshold.swap]
@@ -165,8 +172,7 @@ def should_disable_swap(threshold: Threshold, usage_map: dict[str, tuple[int, in
     logging.debug(f"{ram_total=} {ram_not_free=} {swap_used=}")
     memory_over_ram = (ram_not_free + swap_used)/ram_total
     logging.debug(f"Using {100*memory_over_ram:.2f}% of the RAM")
-    hysteresis = 0.05
-    if 100*(memory_over_ram + hysteresis) < threshold.percentage:
+    if 100*memory_over_ram + hysteresis < threshold.percentage:
         return True
     return False
 
@@ -200,7 +206,9 @@ if __name__ == '__main__':
                     enable_swap(t.swap)
                 elif configuration["disable_swaps"] and t.swap in enabled_swaps \
                     and should_disable_swap(
-                        t, swap_usage, (vmem_info.total - vmem_info.free, vmem_info.total)
+                        t, swap_usage,
+                        (vmem_info.total - vmem_info.free, vmem_info.total),
+                        hysteresis=configuration["hysteresis"]
                     ):
                     # https://stackoverflow.com/questions/2580136/does-python-support-short-circuiting
                     logging.info(f"{t} untriggered")
