@@ -213,6 +213,7 @@ if __name__ == '__main__':
                         continue
                     logging.info(f"{t} exceeded")
                     enable_swap(t.swap)
+                    enabled_swaps.add(t.swap)
                 elif configuration["disable_swaps"] and t.swap in enabled_swaps \
                     and should_disable_swap(
                         t, swap_usage,
