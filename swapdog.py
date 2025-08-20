@@ -6,12 +6,14 @@ import json
 import time
 import subprocess
 import logging
+from collections import namedtuple
 
 import psutil
 
 __version__ = '0.1.0'
-CONFIG = '/etc/swapdog.json'
+CONFIG_PATH = '/etc/swapdog.json'
 PERIOD = 1.0
+DISABLE_SWAPS = False
 
 
 class Threshold:
@@ -38,39 +40,51 @@ class Threshold:
         return f"<Threshold at {self.percentage}% for {self.swap}>"
 
 
-def read_configuration(path: str) -> tuple[list[Threshold], float]:
+def read_configuration(path: str) -> tuple[list[Threshold], dict[str, float | bool]]:
     """
     Reads and parses the configuration file.
 
     :param path: Path to the configuration file.
     :type path: str
-    :return: List of Threshold objects and the monitoring period in seconds.
-    :rtype: tuple[list[Threshold], float]
+    :return: List of Threshold objects and the configuration parameters.
+    :rtype: tuple[list[Threshold], dict[float, bool]]
     :raises SystemExit: If the file cannot be opened (exit code 72) or JSON is malformed (exit code 78).
     """
     try:
         with open(path, "r") as config_file:
-            config = json.load(config_file)
-    except IOError as io_error:
+            parsed_config = json.load(config_file)
+    except IOError:
         logging.error(f"Error: could not open {path}")
         sys.exit(72)
-    except json.JSONDecodeError as json_error:
+    except json.JSONDecodeError:
         logging.error(f"Error: invalid JSON in {path}")
         sys.exit(78)
     thresholds: list[Threshold] = []
-    for t in config["thresholds"]:
+    for t in parsed_config["thresholds"]:
         thresholds.append(Threshold(t["percentage"], t["swap"]))
-    if "period" in config:
-        return (thresholds, config["period"])
-    logging.warning(f"No period provided, defaulting to {PERIOD} seconds")
-    return (thresholds, PERIOD)
+    configuration: dict[str, float | bool] = {
+        "period": PERIOD,
+        "disable_swaps": DISABLE_SWAPS
+    }
+    if "period" in parsed_config:
+        configuration["period"] = parsed_config["period"]
+    else:
+        logging.warning(f"No period provided, defaulting to {PERIOD} seconds")
+    if "disable_swaps" in parsed_config:
+        configuration["disable_swaps"] = parsed_config["disable_swaps"]
+    else:
+        logging.warning(
+            f"No disable_swaps provided, defaulting to {DISABLE_SWAPS}. Swaps will "
+            f"{'not ' if not DISABLE_SWAPS else ''}be automatically disabled"
+        )
+    return (thresholds, configuration)
 
 
 def list_enabled_swaps() -> list[bytes]:
     """
     Lists currently enabled swap devices.
 
-    :return: List of swap device names as bytes.
+    :return: List of swap device paths as bytes.
     :rtype: list[bytes]
     """
     return subprocess.check_output([
@@ -94,14 +108,14 @@ def enable_swap(swap: str) -> None:
 
 if __name__ == '__main__':
     logging.basicConfig(
-        level=logging.INFO,
+        level=logging.DEBUG,
         format="%(asctime)s SwapDog[%(process)d] %(levelname)s %(message)s"
     )
     if len(sys.argv) > 1:
-        thresholds, period = read_configuration(sys.argv[1])
+        thresholds, configuration = read_configuration(sys.argv[1])
     else:
-        logging.warning(f"No configuration path provided, defaulting to {CONFIG}")
-        thresholds, period = read_configuration(CONFIG)
+        logging.warning(f"No configuration path provided, defaulting to {CONFIG_PATH}")
+        thresholds, configuration = read_configuration(CONFIG_PATH)
     logging.info(f"Starting with {thresholds}")
     try:
         while True:
@@ -115,7 +129,7 @@ if __name__ == '__main__':
                         continue
                     logging.info(f"{t} exceeded")
                     enable_swap(t.swap)
-            time.sleep(period)
+            time.sleep(configuration["period"])
     except Exception as e:
         logging.error(f"Fatal error in main loop. {e}")
         sys.exit(1)
