@@ -1,15 +1,16 @@
 # SwapDog
 
-SwapDog is a *swap watchdog* that monitors RAM usage and enables swap devices only when necessary, based on user-defined thresholds. It is designed to prevent excessive swapping, which can lead to performance degradation, while still allowing the system to function without crashing when RAM is exhausted.
+SwapDog is a *swap watchdog* that monitors RAM usage and **enables or disables swap devices automatically** based on user-defined thresholds. It is designed to prevent excessive swapping, which can lead to performance degradation and SSD wear, while still allowing the system to function without crashing when RAM is exhausted.
 
 ### Rationale
 
-It is meant to be useful when one doesn't want to swap memory if not strictly needed, but also doesn't want crashes.
+SwapDog helps you avoid unnecessary swap usage when RAM is available, but will enable swap if memory pressure gets high—and disable it again when pressure drops. This approach is more radical than simply tuning [swappiness](https://askubuntu.com/a/157809/1559059):
 
-- swap memory is always slower than RAM, especially HDDs are
-- SSDs wears out with read and write cycles, while RAM doesn't
+- Swap memory is always slower than RAM; HDDs are especially slow.
+- SSDs wear out with read and write cycles, while RAM does not.
+- Disabling swap when not needed reduces SSD wear and improves performance.
 
-These reasons are enough for me to want to limit the usage of swap in a more radical way than [swappiness](https://askubuntu.com/a/157809/1559059) does.
+These reasons are enough for me to want to limit the usage of swap in a more dynamic way than swappiness does.
 
 ## Installation
 
@@ -65,6 +66,8 @@ In order to configure the behavior of SwapDog, you need to edit the `swapdog.jso
   - `percentage`: The percentage of RAM usage that triggers the swap device to be enabled.
   - `swap`: The path to the swap device (e.g., `/dev/sda1` or `/swapfile`).
 - `period`: The time in seconds between checks of the RAM usage. Default is `1.0` seconds if not specified.
+- `disable_swaps`: A boolean flag that indicates whether to disable swaps when RAM usage is below the threshold. Default is `false`.
+- `hysteresis`: A float value that defines the hysteresis for disabling swaps. This is the percentage below the threshold at which swaps will be disabled. Default is `10.0` if not specified.
 
 ### How to configure
 
@@ -103,7 +106,9 @@ NAME      TYPE      SIZE USED PRIO
             "swap": "/swapfile"
         }
     ],
-    "period": 1.0
+    "period": 1.0,
+    "disable_swaps": true,
+    "hysteresis": 15.0
 }
 ```
 

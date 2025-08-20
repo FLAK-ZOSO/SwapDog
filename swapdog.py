@@ -10,7 +10,7 @@ import traceback
 
 import psutil
 
-__version__ = '0.2.0'
+__version__ = '0.2.1'
 CONFIG_PATH = '/etc/swapdog.json'
 PERIOD = 1.0
 DISABLE_SWAPS = False
@@ -188,7 +188,7 @@ def should_disable_swap(threshold: Threshold, usage_map: dict[str, tuple[int, in
 
 if __name__ == '__main__':
     logging.basicConfig(
-        level=logging.DEBUG,
+        level=logging.INFO,
         format="%(asctime)s SwapDog[%(process)d] %(levelname)s %(message)s"
     )
     if len(sys.argv) > 1:
