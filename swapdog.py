@@ -171,7 +171,9 @@ def should_disable_swap(threshold: Threshold, usage_map: dict[str, tuple[int, in
     :rtype: bool
     """
     logging.debug(usage_map)
-    
+    if threshold.swap not in usage_map:
+        logging.warning(f"Swap {threshold.swap} not found in usage_map; cannot determine if it should be disabled.")
+        return False
     swap_info = usage_map[threshold.swap]
     swap_used = swap_info[0]
     ram_not_free = vmem_info[0]
