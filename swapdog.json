@@ -5,5 +5,7 @@
             "swap": "/dev/mapper/nvme0n1p2_crypt"
         }
     ],
-    "period": 0.5
+    "period": 2,
+    "disable_swaps": true,
+    "hysteresis": 15.0
 }

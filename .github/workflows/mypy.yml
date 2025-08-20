@@ -3,7 +3,8 @@ name: mypy static type checking
 
 on:
   push:
-    branches: [main]
+    # This has to run on all branches
+    branches: ['*']
   pull_request:
     branches: [main]
     
